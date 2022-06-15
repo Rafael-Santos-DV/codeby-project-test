@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const Header = styled.header`
   width: 100%;
@@ -33,27 +33,31 @@ export const SideProductsOfCard = styled.aside<{ activeSidebar: boolean }>`
       props.activeSidebar ? 'sidebar-aside' : 'sidebar-inside'}
     500ms ease;
 
-  @keyframes sidebar-aside {
-    0% {
-      transform: translateX(100%);
-    }
-    100% {
-      transform: translateX(0%);
-    }
-  }
+  ${(props) =>
+    props.activeSidebar &&
+    css`
+      @keyframes sidebar-aside {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(0%);
+        }
+      }
 
-  @keyframes sidebar-inside {
-    0% {
-      opacity: 9999;
-      transform: translateX(0%);
-      opacity: 1;
-    }
-    100% {
-      opacity: -999;
-      opacity: 0;
-      transform: translateX(100%);
-    }
-  }
+      @keyframes sidebar-inside {
+        0% {
+          opacity: 9999;
+          transform: translateX(0%);
+          opacity: 1;
+        }
+        100% {
+          opacity: -999;
+          opacity: 0;
+          transform: translateX(100%);
+        }
+      }
+    `}
 
   @media only screen and (max-width: 768px) {
     width: 80vw;
@@ -157,6 +161,12 @@ export const BoxLogo = styled.div`
     width: 100%;
     max-width: 100px;
     margin-bottom: 10px;
+  }
+
+  @media only screen and (max-width: 768px) {
+    > a img {
+      margin-bottom: 0px;
+    }
   }
 
   @media only screen and (max-width: 350px) {

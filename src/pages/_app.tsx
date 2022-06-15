@@ -45,6 +45,7 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
   const [active, setActive] = useState(false);
   const [activeSidebarCar, setActiveSidebarCar] = useState(false);
   const [activeAnimation, setAnimation] = useState<AnimationType>();
+
   const handleClickActiveMobile = () => {
     const body = document.getElementById('active-mobile');
 
@@ -62,13 +63,13 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
     const body = document.getElementById('active-mobile') as HTMLBodyElement;
 
     if (!activeSidebarCar) {
-      body?.classList.add('active-sidebarCar');
+      body.classList.add('active-sidebarCar');
       setActiveSidebarCar(true);
       return;
     }
 
     setActiveSidebarCar(false);
-    body?.classList.remove('active-sidebarCar');
+    body.classList.remove('active-sidebarCar');
   };
 
   const handleClickAnimationList = (className: string) => {
