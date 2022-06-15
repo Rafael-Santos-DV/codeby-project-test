@@ -36,25 +36,51 @@ export const SideProductsOfCard = styled.aside<{ activeSidebar: boolean }>`
   ${(props) =>
     props.activeSidebar &&
     css`
-      @keyframes sidebar-aside {
-        0% {
-          transform: translateX(-100%);
+      @media only screen and (min-width: 769px) {
+        @keyframes sidebar-aside {
+          0% {
+            transform: translateX(100%);
+          }
+          100% {
+            transform: translateX(0%);
+          }
         }
-        100% {
-          transform: translateX(0%);
+
+        @keyframes sidebar-inside {
+          0% {
+            opacity: 9999;
+            transform: translateX(0%);
+            opacity: 1;
+          }
+          100% {
+            opacity: -999;
+            opacity: 0;
+            transform: translateX(100%);
+          }
         }
       }
 
-      @keyframes sidebar-inside {
-        0% {
-          opacity: 9999;
-          transform: translateX(0%);
-          opacity: 1;
+      @media only screen and (max-width: 768px) {
+        @keyframes sidebar-aside {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(0%);
+          }
         }
-        100% {
-          opacity: -999;
-          opacity: 0;
-          transform: translateX(100%);
+
+        @keyframes sidebar-inside {
+          0% {
+            opacity: 9999;
+            transform: translateX(0%);
+            opacity: 1;
+          }
+          100% {
+            opacity: -999;
+            opacity: 0;
+            transform: translateX(100%);
+          }
         }
       }
     `}
