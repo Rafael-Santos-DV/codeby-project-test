@@ -12,8 +12,11 @@ import {
   BoxForm,
   BoxLogo,
   BoxLogoVtex,
+  BoxSidebar,
   BoxSocialNetwork,
+  ContainerAmount,
   ContainerFooter,
+  ContainerProductsOfCar,
   ContainerSocialNetwork,
   Footer,
   Header,
@@ -33,11 +36,14 @@ import { CarLink } from '../components/CardLinks/CardLInk';
 import logoVtex from '../assets/logo-vtex.svg';
 import hamburguer from '../assets/hambu.svg';
 import iconsSide from '../assets/icon-sidebar.svg';
+import { ProductOfCar } from '../components/ProductOfCar/ProductOfCar';
+import formatPricePtBr from '../utils/formatPricePtBr';
 
 type AnimationType = Record<string, boolean>;
 
 const App: React.FC<AppProps> = ({ Component, pageProps }) => {
   const [active, setActive] = useState(false);
+  const [activeSidebarCar, setActiveSidebarCar] = useState(false);
   const [activeAnimation, setAnimation] = useState<AnimationType>();
   const handleClickActiveMobile = () => {
     const body = document.getElementById('active-mobile');
@@ -50,6 +56,19 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
 
     setActive((prev) => !prev);
     body?.classList.remove('active-mobile');
+  };
+
+  const handleClickActiveSidebarCar = () => {
+    const body = document.getElementById('active-mobile') as HTMLBodyElement;
+
+    if (!activeSidebarCar) {
+      body?.classList.add('active-sidebarCar');
+      setActiveSidebarCar(true);
+      return;
+    }
+
+    setActiveSidebarCar(false);
+    body?.classList.remove('active-sidebarCar');
   };
 
   const handleClickAnimationList = (className: string) => {
@@ -84,19 +103,62 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
               </Link>
             </ul>
           </List>
-          <BoxCar>
+          <BoxCar onClick={handleClickActiveSidebarCar}>
             <img src={iconCar.src} alt="Carrinho" />
             <span>CART</span>
             <span className="quant">1</span>
           </BoxCar>
 
-          <SideProductsOfCard>
-            <div>
-              <span>
+          <SideProductsOfCard activeSidebar={activeSidebarCar}>
+            <BoxSidebar>
+              <button type="button" onClick={handleClickActiveSidebarCar}>
                 <img src={iconsSide.src} alt="Remover" />
-              </span>
-              <h2>Meu Carrinho</h2>
-            </div>
+              </button>
+
+              <div>
+                <h2>Meu Carrinho</h2>
+              </div>
+            </BoxSidebar>
+
+            <ContainerProductsOfCar>
+              <ProductOfCar
+                imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
+                newPrice={200}
+                oldPrice={300}
+                productName="Camisa Jess"
+                amount={2}
+              />
+              <ProductOfCar
+                imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
+                newPrice={200}
+                oldPrice={300}
+                productName="Camisa Jess"
+                amount={2}
+              />
+              <ProductOfCar
+                imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
+                newPrice={200}
+                oldPrice={300}
+                productName="Camisa Jess"
+                amount={2}
+              />
+
+              <ProductOfCar
+                imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
+                newPrice={200}
+                oldPrice={300}
+                productName="Camisa Jess"
+                amount={2}
+              />
+            </ContainerProductsOfCar>
+            <ContainerAmount>
+              <div>
+                <span>Total:</span>
+                <span>{formatPricePtBr(200.5, true)}</span>
+              </div>
+
+              <Button>Finalizar Compra</Button>
+            </ContainerAmount>
           </SideProductsOfCard>
         </Navigation>
       </Header>

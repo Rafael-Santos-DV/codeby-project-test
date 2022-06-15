@@ -16,13 +16,137 @@ export const Header = styled.header`
   }
 `;
 
-export const SideProductsOfCard = styled.aside`
+export const SideProductsOfCard = styled.aside<{ activeSidebar: boolean }>`
+  display: flex;
   position: absolute;
   right: 0;
   top: 0;
+  width: 50vw;
+  height: 100vh;
+  opacity: ${(props) => (props.activeSidebar ? '1' : '0')};
+  z-index: ${(props) => (props.activeSidebar ? '999' : '-9999')};
+  flex-direction: column;
+  box-shadow: 0px 0px 5px ${(props) => props.theme.colors.blackTransparent};
+  background-color: ${(props) => props.theme.colors.white};
+
+  animation: ${(props) =>
+      props.activeSidebar ? 'sidebar-aside' : 'sidebar-inside'}
+    500ms ease;
+
+  @keyframes sidebar-aside {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(0%);
+    }
+  }
+
+  @keyframes sidebar-inside {
+    0% {
+      opacity: 9999;
+      transform: translateX(0%);
+      opacity: 1;
+    }
+    100% {
+      opacity: -999;
+      opacity: 0;
+      transform: translateX(100%);
+    }
+  }
+
+  @media only screen and (max-width: 768px) {
+    width: 80vw;
+  }
+
+  @media only screen and (max-width: 468px) {
+    width: 95vw;
+  }
 `;
 
-export const BoxSidebar = styled.div``;
+export const BoxSidebar = styled.div`
+  display: flex;
+  background: ${(props) => props.theme.colors.blue};
+  width: 100%;
+  align-items: center;
+  padding: 10px;
+
+  button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    z-index: 99;
+
+    img {
+      width: 2rem;
+    }
+  }
+
+  > div {
+    width: 100%;
+    text-align: center;
+
+    h2 {
+      color: ${(props) => props.theme.colors.white};
+      font-size: 1rem;
+    }
+  }
+`;
+
+export const ContainerProductsOfCar = styled.div`
+  display: flex;
+  flex-direction: column;
+  row-gap: 5px;
+  min-height: 70vh;
+  max-height: 70vh;
+  overflow-y: scroll;
+  padding: 20px;
+  /* border-radius: 20px; */
+  border-bottom: 1px solid ${(props) => props.theme.colors.blue};
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: ${(props) => props.theme.colors.white};
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: ${(props) => props.theme.colors.blue};
+    border-radius: 30px;
+  }
+`;
+
+export const ContainerAmount = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 10px;
+  padding-top: 20px;
+
+  > div {
+    span {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0 5px;
+      color: ${(props) => props.theme.colors.black};
+    }
+  }
+
+  > button {
+    width: 100%;
+    max-width: 500px;
+    background-color: ${(props) => props.theme.colors.blue};
+    color: ${(props) => props.theme.colors.white};
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    padding: 4px;
+    border-radius: 6px;
+  }
+`;
 
 export const BoxLogo = styled.div`
   display: flex;
