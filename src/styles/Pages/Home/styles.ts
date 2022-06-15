@@ -16,6 +16,14 @@ export const Header = styled.header`
   }
 `;
 
+export const SideProductsOfCard = styled.aside`
+  position: absolute;
+  right: 0;
+  top: 0;
+`;
+
+export const BoxSidebar = styled.div``;
+
 export const BoxLogo = styled.div`
   display: flex;
   align-items: center;

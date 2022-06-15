@@ -20,6 +20,7 @@ import {
   List,
   Navigation,
   SectionSendEmail,
+  SideProductsOfCard,
 } from '../styles/Pages/Home/styles';
 
 // import images
@@ -31,6 +32,7 @@ import iconLinkedin from '../assets/icon-linkedin.svg';
 import { CarLink } from '../components/CardLinks/CardLInk';
 import logoVtex from '../assets/logo-vtex.svg';
 import hamburguer from '../assets/hambu.svg';
+import iconsSide from '../assets/icon-sidebar.svg';
 
 type AnimationType = Record<string, boolean>;
 
@@ -87,6 +89,15 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
             <span>CART</span>
             <span className="quant">1</span>
           </BoxCar>
+
+          <SideProductsOfCard>
+            <div>
+              <span>
+                <img src={iconsSide.src} alt="Remover" />
+              </span>
+              <h2>Meu Carrinho</h2>
+            </div>
+          </SideProductsOfCard>
         </Navigation>
       </Header>
       <Component {...pageProps} />
