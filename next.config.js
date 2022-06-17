@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const Images = require("next-images");
+const Images = require('next-images');
 
 const withImages = Images({
   esModule: true,

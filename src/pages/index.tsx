@@ -1,10 +1,66 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { ContainerProducts, Main } from '../styles/Pages/Home/styles';
+import { ToastContainer, toast } from 'react-toastify';
+
+import { getCookie, setCookies } from 'cookies-next';
 
 import { BoxOfProduct } from '../components/BoxOfProduct/BoxOfProduct';
+import { useContext } from 'react';
+import { GlobalDataProvider } from '../context/ContextProvider';
+import 'react-toastify/dist/ReactToastify.css';
+
+type TypeCookies = Record<string, [string, number, number]>; // -> { "id": ["id", amount, index] }
 
 const Home: React.FC<NextPage> = () => {
+  const { data } = useContext(GlobalDataProvider);
+
+  const handleClickAddCar = (productId: string, index: number) => {
+    let cookieWithIds = getCookie('codeby-products-car');
+
+    if (!cookieWithIds) {
+      setCookies(
+        'codeby-products-car',
+        `{ "${productId}": [${productId}, 1, ${index}]}`,
+        {
+          maxAge: 60 * 60 * 24,
+        }
+      );
+
+      toast.success('Adicionado ao carrinho.');
+      return;
+    }
+
+    let parseProductsCar = JSON.parse(String(cookieWithIds)) as TypeCookies;
+
+    if (!parseProductsCar[productId]) {
+      const newParseProductsCar = {
+        ...parseProductsCar,
+        [productId]: [productId, 1, index],
+      };
+
+      setCookies('codeby-products-car', JSON.stringify(newParseProductsCar), {
+        maxAge: 60 * 60 * 24,
+      });
+
+      toast.success('Adicionado ao carrinho.');
+
+      return;
+    }
+
+    const newParseProductsCar = {
+      ...parseProductsCar,
+      [productId]: [
+        productId,
+        Number(parseProductsCar[productId][1]) + 1,
+        index,
+      ],
+    };
+
+    setCookies('codeby-products-car', JSON.stringify(newParseProductsCar), {
+      maxAge: 60 * 60 * 24,
+    });
+  };
   return (
     <div>
       <Head>
@@ -14,60 +70,34 @@ const Home: React.FC<NextPage> = () => {
       <Main>
         <h1>Nossos Produtos</h1>
         <ContainerProducts>
-          <BoxOfProduct
-            imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
-            installments={3}
-            newPrice={200}
-            oldPrice={300}
-            productId={'92842984'}
-            productName="Camisa"
-          />
-
-          <BoxOfProduct
-            imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
-            installments={3}
-            newPrice={200}
-            oldPrice={300}
-            productId={'92842984'}
-            productName="Camisa"
-          />
-
-          <BoxOfProduct
-            imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
-            installments={3}
-            newPrice={200}
-            oldPrice={300}
-            productId={'92842984'}
-            productName="Camisa"
-          />
-
-          <BoxOfProduct
-            imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
-            installments={3}
-            newPrice={200}
-            oldPrice={300}
-            productId={'92842984'}
-            productName="Camisa"
-          />
-
-          <BoxOfProduct
-            imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
-            installments={3}
-            newPrice={200}
-            oldPrice={300}
-            productId={'92842984'}
-            productName="Camisa"
-          />
-
-          <BoxOfProduct
-            imageUrl="https://images.tcdn.com.br/img/img_prod/619185/180_t_shirt_feminina_sarcasm_537_1_58eff6dac6b12d3b232e0de7a251c3d7.jpg"
-            installments={3}
-            newPrice={200}
-            oldPrice={300}
-            productId={'92842984'}
-            productName="Camisa"
-          />
+          {data &&
+            data.map((product) =>
+              product.items.map(
+                (
+                  {
+                    images: [{ imageUrl, imageId }],
+                    nameComplete,
+                    sellers,
+                    itemId,
+                  },
+                  index
+                ) => (
+                  <BoxOfProduct
+                    onClick={() => handleClickAddCar(itemId, index)}
+                    title="Adicionar ao Carrinho"
+                    key={nameComplete}
+                    imageUrl={imageUrl}
+                    newPrice={sellers[0].commertialOffer.Price}
+                    oldPrice={Number(sellers[0].PriceWithoutDiscount)}
+                    productName={nameComplete}
+                    installments={1}
+                    productId={imageId}
+                  />
+                )
+              )
+            )}
         </ContainerProducts>
+        <ToastContainer autoClose={500} />
       </Main>
     </div>
   );

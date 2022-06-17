@@ -7,6 +7,8 @@ export const Container = styled.div`
   padding: 5px;
   border: 1px solid ${(props) => props.theme.colors.grey};
   border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
 
   @media only screen and (max-width: 568px) {
     max-width: 220px;
@@ -20,7 +22,8 @@ export const Container = styled.div`
     max-width: 100%;
   }
 
-  a {
+  // or tag 'a'
+  div {
     width: 100%;
     display: flex;
     flex-direction: column;

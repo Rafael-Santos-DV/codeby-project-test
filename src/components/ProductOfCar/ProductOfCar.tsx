@@ -15,6 +15,8 @@ type ProductType = {
   oldPrice: number;
   newPrice: number;
   amount: number;
+  onClickButtonMinus: () => void;
+  onClickButtonPlus: () => void;
 };
 
 export const ProductOfCar: React.FC<ProductType> = ({
@@ -23,6 +25,8 @@ export const ProductOfCar: React.FC<ProductType> = ({
   oldPrice,
   productName,
   amount,
+  onClickButtonMinus,
+  onClickButtonPlus,
 }) => {
   return (
     <Container>
@@ -45,8 +49,12 @@ export const ProductOfCar: React.FC<ProductType> = ({
         </CurrentPrice>
 
         <IncreaseOrDecrease>
-          <button type="button">+</button>
-          <button type="button">-</button>
+          <button type="button" onClick={onClickButtonPlus}>
+            +
+          </button>
+          <button type="button" onClick={onClickButtonMinus}>
+            -
+          </button>
           <span>{amount}</span>
         </IncreaseOrDecrease>
       </InformationProduct>
