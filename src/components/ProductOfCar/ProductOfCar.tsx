@@ -35,13 +35,14 @@ export const ProductOfCar: React.FC<ProductType> = ({
       </BoxImage>
       <InformationProduct>
         <strong>{productName}</strong>
-
-        <OldPrice>
+        {oldPrice !== newPrice && (
           <OldPrice>
-            <abbr>R$</abbr>
-            <span>{formatPricePtBr(oldPrice)}</span>
+            <OldPrice>
+              <abbr>R$</abbr>
+              <span>{formatPricePtBr(oldPrice)}</span>
+            </OldPrice>
           </OldPrice>
-        </OldPrice>
+        )}
 
         <CurrentPrice>
           <abbr>R$</abbr>

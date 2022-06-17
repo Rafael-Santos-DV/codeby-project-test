@@ -9,6 +9,7 @@ export const Container = styled.div`
   border-radius: 5px;
   text-align: center;
   cursor: pointer;
+
   /* height: max-content; */
 
   @media only screen and (max-width: 400px) {
@@ -42,6 +43,11 @@ export const Container = styled.div`
         max-height: 24vh;
         transition: transform 200ms ease;
         object-fit: contain;
+
+        @media screen and (min-width: 1200px) {
+          min-height: 140px;
+          max-height: 140px;
+        }
       }
     }
   }
@@ -60,6 +66,11 @@ export const Container = styled.div`
         transform: scale(1.04);
       }
     }
+
+    button.add-car {
+      background-color: ${(props) => props.theme.colors.green};
+      color: ${(props) => props.theme.colors.black};
+    }
   }
 `;
 
@@ -69,6 +80,26 @@ export const BoxInformation = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  > button.add-car {
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    padding: 5px;
+    background-color: ${(props) => props.theme.colors.blue};
+    transition: color 200ms ease, background-color 200ms ease;
+    animation: show-button 200ms ease;
+    border-radius: 5px;
+  }
+
+  @keyframes show-button {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(0%);
+    }
+  }
 `;
 
 export const ProductName = styled.div`
@@ -134,8 +165,12 @@ export const NewPrice = styled.div`
     font-size: 1.2rem;
     color: ${(props) => props.theme.colors.black};
     font-weight: 600;
+  }
 
-    @media only screen and (max-width: 390px) {
+  @media only screen and (max-width: 468px) {
+    column-gap: 5px;
+
+    span {
       font-size: 1rem;
     }
   }

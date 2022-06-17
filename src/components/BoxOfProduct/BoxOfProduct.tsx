@@ -1,5 +1,6 @@
 import React from 'react';
 import formatPricePtBr from '../../utils/formatPricePtBr';
+import { Button } from '../Button/Button';
 import {
   BoxInformation,
   Container,
@@ -53,11 +54,16 @@ export const BoxOfProduct: React.FC<ProductType> = ({
             <span>{formatPricePtBr(newPrice)}</span>
           </NewPrice>
 
-          <InfoInstallments>
-            ou <strong>{installments}</strong> de{' '}
-            <strong>{formatPricePtBr(newPrice / installments, true)}</strong>{' '}
-            sem juros
-          </InfoInstallments>
+          {installments > 1 && (
+            <InfoInstallments>
+              ou <strong>{installments}</strong> de{' '}
+              <strong>{formatPricePtBr(newPrice / installments, true)}</strong>{' '}
+              sem juros
+            </InfoInstallments>
+          )}
+          <Button type="button" className="add-car">
+            Adicionar ao carrinho
+          </Button>
         </BoxInformation>
       </div>
       {/* </a>

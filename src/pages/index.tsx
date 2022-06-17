@@ -1,6 +1,10 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { ContainerProducts, Main } from '../styles/Pages/Home/styles';
+import {
+  ContainerProducts,
+  ContainerSkeleton,
+  Main,
+} from '../styles/Pages/Home/styles';
 import { ToastContainer, toast } from 'react-toastify';
 
 import { getCookie, setCookies } from 'cookies-next';
@@ -9,6 +13,9 @@ import { BoxOfProduct } from '../components/BoxOfProduct/BoxOfProduct';
 import { useContext } from 'react';
 import { GlobalDataProvider } from '../context/ContextProvider';
 import 'react-toastify/dist/ReactToastify.css';
+
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 type TypeCookies = Record<string, [string, number, number]>; // -> { "id": ["id", amount, index] }
 
@@ -70,6 +77,21 @@ const Home: React.FC<NextPage> = () => {
       <Main>
         <h1>Nossos Produtos</h1>
         <ContainerProducts>
+          {/* skeleton screen */}
+
+          {!data.length && (
+            <ContainerSkeleton>
+              <Skeleton count={1} className="skeleton" />
+              <Skeleton count={1} className="skeleton" />
+              <Skeleton count={1} className="skeleton" />
+              <Skeleton count={1} className="skeleton" />
+              <Skeleton count={1} className="skeleton" />
+              <Skeleton count={1} className="skeleton" />
+              <Skeleton count={1} className="skeleton" />
+              <Skeleton count={1} className="skeleton" />
+            </ContainerSkeleton>
+          )}
+
           {data &&
             data.map((product) =>
               product.items.map(
