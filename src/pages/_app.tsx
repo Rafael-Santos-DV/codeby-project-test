@@ -1,3 +1,4 @@
+import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import { ThemeProvider } from 'styled-components';
 import { useEffect, useState } from 'react';
@@ -36,10 +37,11 @@ import { CarLink } from '../components/CardLinks/CardLInk';
 import logoVtex from '../assets/logo-vtex.svg';
 import hamburguer from '../assets/hambu.svg';
 import iconsSide from '../assets/icon-sidebar.svg';
+import buttonX from '../assets/button-x.svg';
+
 import { ProductOfCar } from '../components/ProductOfCar/ProductOfCar';
 import formatPricePtBr from '../utils/formatPricePtBr';
 import ContextProvider from '../context/ContextProvider';
-import { NextPage } from 'next';
 import { getCookie, setCookies } from 'cookies-next';
 import { ItemsProducts } from '../types/DataTypeProduct';
 import { useData } from '../hooks/useData';
@@ -212,7 +214,16 @@ const App: React.FC<AppProps & NextPage> = ({ Component, pageProps }) => {
 
           <Navigation>
             <div className="button-mobile" onClick={handleClickActiveMobile}>
-              <img src={hamburguer.src} alt="Hamburguer" />
+              <img
+                src={hamburguer.src}
+                alt="Hamburguer"
+                style={{ display: !active ? 'flex' : 'none' }}
+              />
+              <img
+                src={buttonX.src}
+                alt="Exit"
+                style={{ display: active ? 'flex' : 'none' }}
+              />
             </div>
             <List activeMobile={active} onClick={handleClickActiveMobile}>
               <ul>

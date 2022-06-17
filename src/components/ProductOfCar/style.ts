@@ -14,6 +14,7 @@ export const BoxImage = styled.div`
   img {
     width: 100%;
     max-width: 90px;
+    object-fit: contain;
   }
 `;
 
@@ -21,6 +22,11 @@ export const InformationProduct = styled.div`
   display: flex;
   flex-direction: column;
   row-gap: 8px;
+  font-size: 0.9rem;
+
+  @media screen and (max-width: 568px) {
+    font-size: 0.7rem;
+  }
 `;
 
 export const OldPrice = styled.div`
@@ -68,6 +74,13 @@ export const CurrentPrice = styled.div`
     justify-content: center;
     font-size: 0.7rem;
   }
+
+  @media screen and (max-width: 500px) {
+    span,
+    abbr {
+      font-size: 0.8rem;
+    }
+  }
 `;
 
 export const IncreaseOrDecrease = styled.div`
@@ -87,6 +100,11 @@ export const IncreaseOrDecrease = styled.div`
 
     background: ${(props) => props.theme.colors.black};
     color: ${(props) => props.theme.colors.white};
+
+    @media screen and (max-width: 500px) {
+      width: 22px;
+      height: 22px;
+    }
   }
 
   span {
