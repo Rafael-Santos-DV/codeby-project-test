@@ -41,11 +41,12 @@ import buttonX from '../assets/button-x.svg';
 
 import { ProductOfCar } from '../components/ProductOfCar/ProductOfCar';
 import formatPricePtBr from '../utils/formatPricePtBr';
-import ContextProvider from '../context/ContextProvider';
-import { getCookie } from 'cookies-next';
+import { getCookie, setCookies } from 'cookies-next';
 import ResponseProducts from '../types/DataTypeProduct';
 import { useData } from '../hooks/useData';
 import { CartProductsType } from '../schemas/cartProducts';
+import { ApiCode } from '../service/api';
+import { toast } from 'react-toastify';
 
 type AnimationType = Record<string, boolean>;
 type ProductCarType = {
@@ -57,14 +58,20 @@ type ProductCarType = {
   productName: string;
 };
 
-type TestTy = {
+type GlobalDataType = {
+  data: ResponseProducts[];
+  getTotal: number;
+  productsCart: ProductCarType[] | undefined;
+  codebyCookies: string | undefined;
   setRefreshGlobal: React.Dispatch<React.SetStateAction<boolean>>;
+  handleChangeRemoveProduct: (productId: string) => void;
+  handleChangeAddProduct: (productId: string, index: number) => void;
 };
 
-export const ContextAppProvider = createContext({} as TestTy);
+export const ContextAppProvider = createContext({} as GlobalDataType);
 
 const App: React.FC<AppProps & NextPage> = ({ Component, pageProps }) => {
-  const codebyCookies = getCookie('codeby-products-cart');
+  const codebyCookies = String(getCookie('codeby-products-cart'));
   const [active, setActive] = useState(false);
   const [activeSidebarCar, setActiveSidebarCar] = useState(false);
   const [activeAnimation, setAnimation] = useState<AnimationType>();
@@ -147,185 +154,222 @@ const App: React.FC<AppProps & NextPage> = ({ Component, pageProps }) => {
     setAnimation((prev) => ({ ...prev, [className]: !prev?.[className] }));
   };
 
-  const handleChangeRemoveProduct = (productId: string, index: number) => {};
+  const handleChangeRemoveProduct = async (productId: string) => {
+    try {
+      await ApiCode.post('/removeProductCart', {
+        productId,
+        cartId: codebyCookies,
+      });
 
-  const handleChangeAddProduct = (productId: string, index: number) => {};
+      setRefreshGlobal((prev) => !prev);
+      setCookies('codeby-products-cart', codebyCookies, {
+        maxAge: 60 * 60 * 24,
+      });
+    } catch (err) {
+      toast.error('Erro interno!');
+    }
+  };
+
+  const handleChangeAddProduct = async (productId: string, index: number) => {
+    try {
+      await ApiCode.post('/addProductCart', {
+        productId,
+        indexCart: index,
+        cartId: codebyCookies,
+      });
+
+      setRefreshGlobal((prev) => !prev);
+      setCookies('codeby-products-cart', codebyCookies, {
+        maxAge: 60 * 60 * 24,
+      });
+    } catch (err) {
+      toast.error('Erro interno!');
+    }
+  };
 
   return (
-    <ContextProvider>
-      <ContextAppProvider.Provider value={{ setRefreshGlobal }}>
-        <ThemeProvider theme={theme}>
-          <StylesGlobal />
-          <Header>
-            <BoxLogo>
-              <Link href="/">
-                <a>
-                  <img src={logo.src} alt="Codeby" />
-                </a>
-              </Link>
-            </BoxLogo>
+    <ContextAppProvider.Provider
+      value={{
+        setRefreshGlobal,
+        codebyCookies,
+        getTotal,
+        data,
+        productsCart,
+        handleChangeAddProduct,
+        handleChangeRemoveProduct,
+      }}
+    >
+      <ThemeProvider theme={theme}>
+        <StylesGlobal />
+        <Header>
+          <BoxLogo>
+            <Link href="/">
+              <a>
+                <img src={logo.src} alt="Codeby" />
+              </a>
+            </Link>
+          </BoxLogo>
 
-            <Navigation>
-              <div className="button-mobile" onClick={handleClickActiveMobile}>
-                <img
-                  src={hamburguer.src}
-                  alt="Hamburguer"
-                  style={{ display: !active ? 'flex' : 'none' }}
-                />
-                <img
-                  src={buttonX.src}
-                  alt="Exit"
-                  style={{ display: active ? 'flex' : 'none' }}
-                />
-              </div>
-              <List activeMobile={active} onClick={handleClickActiveMobile}>
-                <ul>
-                  <Link href="/">
-                    <a>Home</a>
-                  </Link>
-                </ul>
-                <ul>
-                  <Link href="/products">
-                    <a>Meus Produtos</a>
-                  </Link>
-                </ul>
-              </List>
-              <BoxCar onClick={handleClickActiveSidebarCar}>
-                <img src={iconCar.src} alt="Carrinho" />
-                <span>CART</span>
-                <span className="quant">{productsCart?.length ?? 0}</span>
-              </BoxCar>
+          <Navigation>
+            <div className="button-mobile" onClick={handleClickActiveMobile}>
+              <img
+                src={hamburguer.src}
+                alt="Hamburguer"
+                style={{ display: !active ? 'flex' : 'none' }}
+              />
+              <img
+                src={buttonX.src}
+                alt="Exit"
+                style={{ display: active ? 'flex' : 'none' }}
+              />
+            </div>
+            <List activeMobile={active} onClick={handleClickActiveMobile}>
+              <ul>
+                <Link href="/">
+                  <a>Home</a>
+                </Link>
+              </ul>
+              <ul>
+                <Link href="/products">
+                  <a>Meus Produtos</a>
+                </Link>
+              </ul>
+            </List>
+            <BoxCar onClick={handleClickActiveSidebarCar}>
+              <img src={iconCar.src} alt="Carrinho" />
+              <span>CART</span>
+              <span className="quant">{productsCart?.length ?? 0}</span>
+            </BoxCar>
 
-              <SideProductsOfCard activeSidebar={activeSidebarCar}>
-                <BoxSidebar>
-                  <button type="button" onClick={handleClickActiveSidebarCar}>
-                    <img src={iconsSide.src} alt="Remover" />
-                  </button>
-
-                  <div>
-                    <h2>Meu Carrinho</h2>
-                  </div>
-                </BoxSidebar>
-
-                <ContainerProductsOfCar>
-                  {productsCart &&
-                    productsCart.map((product, index) => (
-                      <ProductOfCar
-                        amount={product.amount}
-                        key={product.productId}
-                        imageUrl={String(product.imageUrl)}
-                        newPrice={Number(product.newPrice)}
-                        oldPrice={Number(product.oldPrice)}
-                        productName={String(product.productName)}
-                        onClickButtonMinus={() =>
-                          handleChangeRemoveProduct(product.productId, index)
-                        }
-                        onClickButtonPlus={() =>
-                          handleChangeAddProduct(product.productId, index)
-                        }
-                      />
-                    ))}
-                </ContainerProductsOfCar>
-                <ContainerAmount>
-                  <div>
-                    <span>Total:</span>
-                    <span>{formatPricePtBr(getTotal, true)}</span>
-                  </div>
-
-                  <Button>Finalizar Compra</Button>
-                </ContainerAmount>
-              </SideProductsOfCard>
-            </Navigation>
-          </Header>
-          <Component {...pageProps} />
-
-          <Footer>
-            <SectionSendEmail>
-              <BoxForm>
-                <h2>FIQUE POR DENTRO DAS NOVIDADES</h2>
+            <SideProductsOfCard activeSidebar={activeSidebarCar}>
+              <BoxSidebar>
+                <button type="button" onClick={handleClickActiveSidebarCar}>
+                  <img src={iconsSide.src} alt="Remover" />
+                </button>
 
                 <div>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Digite seu e-mail"
-                  />
-                  <Button type="submit">Assinar</Button>
+                  <h2>Meu Carrinho</h2>
                 </div>
-              </BoxForm>
-              <ContainerSocialNetwork>
-                <span>Siga a gente!</span>
+              </BoxSidebar>
 
-                <BoxSocialNetwork>
-                  <Link href="/">
-                    <a>
-                      <img src={iconFace.src} alt="Facebook" />
-                    </a>
-                  </Link>
-                  <Link href="/">
-                    <a>
-                      <img src={iconYt.src} alt="Youtube" />
-                    </a>
-                  </Link>
-                  <Link href="/">
-                    <a>
-                      <img src={iconLinkedin.src} alt="Linkedin" />
-                    </a>
-                  </Link>
-                </BoxSocialNetwork>
-              </ContainerSocialNetwork>
-            </SectionSendEmail>
-            <ContainerFooter
-              icon1={activeAnimation?.activeAnimation1}
-              icon2={activeAnimation?.activeAnimation2}
-            >
+              <ContainerProductsOfCar>
+                {productsCart &&
+                  productsCart.map((product, index) => (
+                    <ProductOfCar
+                      amount={product.amount}
+                      key={product.productId}
+                      imageUrl={String(product.imageUrl)}
+                      newPrice={Number(product.newPrice)}
+                      oldPrice={Number(product.oldPrice)}
+                      productName={String(product.productName)}
+                      onClickButtonMinus={() =>
+                        handleChangeRemoveProduct(product.productId)
+                      }
+                      onClickButtonPlus={() =>
+                        handleChangeAddProduct(product.productId, index)
+                      }
+                    />
+                  ))}
+              </ContainerProductsOfCar>
+              <ContainerAmount>
+                <div>
+                  <span>Total:</span>
+                  <span>{formatPricePtBr(getTotal, true)}</span>
+                </div>
+
+                <Button>Finalizar Compra</Button>
+              </ContainerAmount>
+            </SideProductsOfCard>
+          </Navigation>
+        </Header>
+        <Component {...pageProps} />
+
+        <Footer>
+          <SectionSendEmail>
+            <BoxForm>
+              <h2>FIQUE POR DENTRO DAS NOVIDADES</h2>
+
               <div>
-                <CarLink
-                  onClick={() => handleClickAnimationList('activeAnimation1')}
-                  title="Institucional"
-                  className={
-                    activeAnimation?.activeAnimation1 ? 'activeAnimation1' : ''
-                  }
-                >
-                  <Link href="/">
-                    <a>Quem somos</a>
-                  </Link>
-                  <Link href="/">
-                    <a>Nossas Lojas</a>
-                  </Link>
-                </CarLink>
-
-                <CarLink
-                  onClick={() => handleClickAnimationList('activeAnimation2')}
-                  title="Atendimento"
-                  className={`card-two ${
-                    activeAnimation?.activeAnimation2 ? 'activeAnimation2' : ''
-                  }`}
-                >
-                  <Link href="/">
-                    <a>Central de atendimento</a>
-                  </Link>
-                  <Link href="/">
-                    <a>Trocas e devoluções</a>
-                  </Link>
-                  <Link href="/">
-                    <a>Política de privacidade</a>
-                  </Link>
-                </CarLink>
-
-                <BoxLogoVtex>
-                  <span>POWERED BY</span>
-                  <img src={logoVtex.src} alt="Vtex" />
-                </BoxLogoVtex>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Digite seu e-mail"
+                />
+                <Button type="submit">Assinar</Button>
               </div>
-              <div className="footer">
-                <p>© 2019, CODEBY | TECNOLOGIA PARA NEGÓCIOS POWERED BY VTEX</p>
-              </div>
-            </ContainerFooter>
-          </Footer>
-        </ThemeProvider>
-      </ContextAppProvider.Provider>
-    </ContextProvider>
+            </BoxForm>
+            <ContainerSocialNetwork>
+              <span>Siga a gente!</span>
+
+              <BoxSocialNetwork>
+                <Link href="/">
+                  <a>
+                    <img src={iconFace.src} alt="Facebook" />
+                  </a>
+                </Link>
+                <Link href="/">
+                  <a>
+                    <img src={iconYt.src} alt="Youtube" />
+                  </a>
+                </Link>
+                <Link href="/">
+                  <a>
+                    <img src={iconLinkedin.src} alt="Linkedin" />
+                  </a>
+                </Link>
+              </BoxSocialNetwork>
+            </ContainerSocialNetwork>
+          </SectionSendEmail>
+          <ContainerFooter
+            icon1={activeAnimation?.activeAnimation1}
+            icon2={activeAnimation?.activeAnimation2}
+          >
+            <div>
+              <CarLink
+                onClick={() => handleClickAnimationList('activeAnimation1')}
+                title="Institucional"
+                className={
+                  activeAnimation?.activeAnimation1 ? 'activeAnimation1' : ''
+                }
+              >
+                <Link href="/">
+                  <a>Quem somos</a>
+                </Link>
+                <Link href="/">
+                  <a>Nossas Lojas</a>
+                </Link>
+              </CarLink>
+
+              <CarLink
+                onClick={() => handleClickAnimationList('activeAnimation2')}
+                title="Atendimento"
+                className={`card-two ${
+                  activeAnimation?.activeAnimation2 ? 'activeAnimation2' : ''
+                }`}
+              >
+                <Link href="/">
+                  <a>Central de atendimento</a>
+                </Link>
+                <Link href="/">
+                  <a>Trocas e devoluções</a>
+                </Link>
+                <Link href="/">
+                  <a>Política de privacidade</a>
+                </Link>
+              </CarLink>
+
+              <BoxLogoVtex>
+                <span>POWERED BY</span>
+                <img src={logoVtex.src} alt="Vtex" />
+              </BoxLogoVtex>
+            </div>
+            <div className="footer">
+              <p>© 2019, CODEBY | TECNOLOGIA PARA NEGÓCIOS POWERED BY VTEX</p>
+            </div>
+          </ContainerFooter>
+        </Footer>
+      </ThemeProvider>
+    </ContextAppProvider.Provider>
   );
 };
 

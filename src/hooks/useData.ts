@@ -11,9 +11,10 @@ type UseDataType = {
   path: '/products' | '/showCart';
   cartId?: string;
   refresh?: boolean | string;
+  refreshTwo?: boolean | string;
 };
 
-export const useData = ({ path, cartId, refresh }: UseDataType) => {
+export const useData = ({ path, cartId, refresh, refreshTwo }: UseDataType) => {
   const [data, setData] = useState<DataType<typeof path>>();
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export const useData = ({ path, cartId, refresh }: UseDataType) => {
         .data as ResponseProducts[];
       setData(response);
     })();
-  }, [refresh]);
+  }, [refresh, refreshTwo]);
 
   return data;
 };

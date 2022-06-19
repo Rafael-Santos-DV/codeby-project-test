@@ -1,6 +1,6 @@
 import { NextPage } from 'next';
 import Head from 'next/head';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 // import components
 import {
@@ -15,32 +15,25 @@ import {
 import { ProductOfCar } from '../components/ProductOfCar/ProductOfCar';
 import { Button } from '../components/Button/Button';
 import formatPricePtBr from '../utils/formatPricePtBr';
-import { GlobalDataProvider } from '../context/ContextProvider';
-import { ApiCode } from '../service/api';
-import { setCookies } from 'cookies-next';
+
 import { ContextAppProvider } from './_app';
+import { ToastContainer } from 'react-toastify';
 
 const Products: React.FC<NextPage> = () => {
-  const { getTotal, productsCart, codeByCookie, setRefresh } =
-    useContext(GlobalDataProvider);
+  const {
+    getTotal,
+    productsCart,
+    handleChangeRemoveProduct,
+    handleChangeAddProduct,
+  } = useContext(ContextAppProvider);
 
-  const { setRefreshGlobal } = useContext(ContextAppProvider);
+  const [data, setData] = useState<typeof productsCart>();
 
-  const handleChangeRemoveProduct = (productId: string, index: number) => {};
-
-  const handleChangeAddProduct = async (productId: string, index: number) => {
-    await ApiCode.post('/addProductCart', {
-      productId,
-      indexCart: index,
-      cartId: codeByCookie,
-    });
-
-    setRefresh((prev) => !prev);
-    setRefreshGlobal((prev) => !prev);
-    setCookies('codeby-products-cart', codeByCookie, {
-      maxAge: 60 * 60 * 24,
-    });
-  };
+  useEffect(() => {
+    if (productsCart) {
+      setData(productsCart);
+    }
+  }, [productsCart]);
 
   return (
     <div>
@@ -53,8 +46,8 @@ const Products: React.FC<NextPage> = () => {
         <h1>Meus Produtos</h1>
 
         <ContainerProducts>
-          {productsCart &&
-            productsCart.map((product, index) => (
+          {data &&
+            data.map((product, index) => (
               <ProductOfCar
                 amount={product.amount}
                 key={product.productId}
@@ -63,7 +56,7 @@ const Products: React.FC<NextPage> = () => {
                 oldPrice={Number(product.oldPrice)}
                 productName={String(product.productName)}
                 onClickButtonMinus={() =>
-                  handleChangeRemoveProduct(product.productId, index)
+                  handleChangeRemoveProduct(product.productId)
                 }
                 onClickButtonPlus={() =>
                   handleChangeAddProduct(product.productId, index)
@@ -89,6 +82,7 @@ const Products: React.FC<NextPage> = () => {
           </BoxButton>
         </ContainerFooter>
       </MainProduct>
+      <ToastContainer autoClose={500} />
     </div>
   );
 };

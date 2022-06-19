@@ -3,11 +3,10 @@ import Head from 'next/head';
 import { ContainerProducts, Main } from '../styles/Pages/Home/styles';
 import { ToastContainer, toast } from 'react-toastify';
 
-import { getCookie, setCookies } from 'cookies-next';
+import { setCookies } from 'cookies-next';
 
 import { BoxOfProduct } from '../components/BoxOfProduct/BoxOfProduct';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { GlobalDataProvider } from '../context/ContextProvider';
+import { useContext } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import { SkeletonScreen } from '../components/SkeletonScreen/SkeletonScreen';
 import { ApiCode } from '../service/api';
@@ -15,16 +14,9 @@ import { CartProductsType } from '../schemas/cartProducts';
 import { ContextAppProvider } from './_app';
 
 const Home: React.FC<NextPage> = () => {
-  const codebyCookieCart = getCookie('codeby-products-cart');
-  const { data } = useContext(GlobalDataProvider);
-  const [codebyCookie, setCodebyCookie] = useState('');
-  const { setRefreshGlobal } = useContext(ContextAppProvider);
-
-  useEffect(() => {
-    if (codebyCookieCart) {
-      setCodebyCookie(String(codebyCookieCart));
-    }
-  }, [codebyCookieCart]);
+  // const codebyCookieCart = getCookie('codeby-products-cart');
+  const { setRefreshGlobal, data, codebyCookies } =
+    useContext(ContextAppProvider);
 
   const handleClickAddCar = async (
     productId: string,
@@ -44,7 +36,7 @@ const Home: React.FC<NextPage> = () => {
         })
       ).data as CartProductsType;
 
-      if (!codebyCookie) {
+      if (!codebyCookies) {
         setCookies('codeby-products-cart', data.cartId, {
           maxAge: 60 * 60 * 24,
         });
@@ -69,7 +61,7 @@ const Home: React.FC<NextPage> = () => {
         <ContainerProducts>
           {/* skeleton screen */}
 
-          {!data.length && <SkeletonScreen count={8} childrenLines={1} />}
+          {!data?.length && <SkeletonScreen count={8} childrenLines={1} />}
 
           {data &&
             data.map((product) =>
@@ -85,7 +77,7 @@ const Home: React.FC<NextPage> = () => {
                 ) => (
                   <BoxOfProduct
                     onClick={() =>
-                      handleClickAddCar(itemId, index, codebyCookie)
+                      handleClickAddCar(itemId, index, codebyCookies)
                     }
                     title="Adicionar ao Carrinho"
                     key={nameComplete}
