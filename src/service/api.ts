@@ -9,7 +9,7 @@ export const ApiVtex = axios.create({
 });
 
 export const ApiCode = axios.create({
-  baseURL: '/api/products',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

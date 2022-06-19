@@ -1,72 +1,57 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import {
-  ContainerProducts,
-  ContainerSkeleton,
-  Main,
-} from '../styles/Pages/Home/styles';
+import { ContainerProducts, Main } from '../styles/Pages/Home/styles';
 import { ToastContainer, toast } from 'react-toastify';
 
 import { getCookie, setCookies } from 'cookies-next';
 
 import { BoxOfProduct } from '../components/BoxOfProduct/BoxOfProduct';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { GlobalDataProvider } from '../context/ContextProvider';
 import 'react-toastify/dist/ReactToastify.css';
-
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
-
-type TypeCookies = Record<string, [string, number, number]>; // -> { "id": ["id", amount, index] }
+import { SkeletonScreen } from '../components/SkeletonScreen/SkeletonScreen';
+import { ApiCode } from '../service/api';
+import { CartProductsType } from '../schemas/cartProducts';
+import { ContextAppProvider } from './_app';
 
 const Home: React.FC<NextPage> = () => {
+  const codebyCookieCart = getCookie('codeby-products-cart');
   const { data } = useContext(GlobalDataProvider);
+  const [codebyCookie, setCodebyCookie] = useState('');
+  const { setRefreshGlobal } = useContext(ContextAppProvider);
 
-  const handleClickAddCar = (productId: string, index: number) => {
-    let cookieWithIds = getCookie('codeby-products-car');
+  useEffect(() => {
+    if (codebyCookieCart) {
+      setCodebyCookie(String(codebyCookieCart));
+    }
+  }, [codebyCookieCart]);
 
-    if (!cookieWithIds) {
-      setCookies(
-        'codeby-products-car',
-        `{ "${productId}": [${productId}, 1, ${index}]}`,
-        {
+  const handleClickAddCar = async (
+    productId: string,
+    index: number,
+    cartId?: string
+  ) => {
+    try {
+      const data = (
+        await ApiCode.post('/addProductCart', {
+          productId,
+          indexCart: index,
+          cartId,
+        })
+      ).data as CartProductsType;
+
+      if (!codebyCookie) {
+        setCookies('codeby-products-cart', data.cartId, {
           maxAge: 60 * 60 * 24,
-        }
-      );
+        });
+      }
 
-      toast.success('Adicionado ao carrinho.');
-      return;
+      toast.success('Adicionado ao carrinho!');
+
+      setRefreshGlobal((prev) => !prev);
+    } catch (err) {
+      toast.error('Erro interno!');
     }
-
-    let parseProductsCar = JSON.parse(String(cookieWithIds)) as TypeCookies;
-
-    if (!parseProductsCar[productId]) {
-      const newParseProductsCar = {
-        ...parseProductsCar,
-        [productId]: [productId, 1, index],
-      };
-
-      setCookies('codeby-products-car', JSON.stringify(newParseProductsCar), {
-        maxAge: 60 * 60 * 24,
-      });
-
-      toast.success('Adicionado ao carrinho.');
-
-      return;
-    }
-
-    const newParseProductsCar = {
-      ...parseProductsCar,
-      [productId]: [
-        productId,
-        Number(parseProductsCar[productId][1]) + 1,
-        index,
-      ],
-    };
-
-    setCookies('codeby-products-car', JSON.stringify(newParseProductsCar), {
-      maxAge: 60 * 60 * 24,
-    });
   };
   return (
     <div>
@@ -79,18 +64,7 @@ const Home: React.FC<NextPage> = () => {
         <ContainerProducts>
           {/* skeleton screen */}
 
-          {!data.length && (
-            <ContainerSkeleton>
-              <Skeleton count={1} className="skeleton" />
-              <Skeleton count={1} className="skeleton" />
-              <Skeleton count={1} className="skeleton" />
-              <Skeleton count={1} className="skeleton" />
-              <Skeleton count={1} className="skeleton" />
-              <Skeleton count={1} className="skeleton" />
-              <Skeleton count={1} className="skeleton" />
-              <Skeleton count={1} className="skeleton" />
-            </ContainerSkeleton>
-          )}
+          {!data.length && <SkeletonScreen count={8} childrenLines={1} />}
 
           {data &&
             data.map((product) =>
@@ -105,7 +79,9 @@ const Home: React.FC<NextPage> = () => {
                   index
                 ) => (
                   <BoxOfProduct
-                    onClick={() => handleClickAddCar(itemId, index)}
+                    onClick={() =>
+                      handleClickAddCar(itemId, index, codebyCookie)
+                    }
                     title="Adicionar ao Carrinho"
                     key={nameComplete}
                     imageUrl={imageUrl}

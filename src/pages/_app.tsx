@@ -1,7 +1,7 @@
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import { ThemeProvider } from 'styled-components';
-import { useEffect, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { StylesGlobal } from '../styles/StylesGlobal';
 import theme from '../styles/theme';
 import Link from 'next/link';
@@ -42,78 +42,80 @@ import buttonX from '../assets/button-x.svg';
 import { ProductOfCar } from '../components/ProductOfCar/ProductOfCar';
 import formatPricePtBr from '../utils/formatPricePtBr';
 import ContextProvider from '../context/ContextProvider';
-import { getCookie, setCookies } from 'cookies-next';
-import { ItemsProducts } from '../types/DataTypeProduct';
+import { getCookie } from 'cookies-next';
+import ResponseProducts from '../types/DataTypeProduct';
 import { useData } from '../hooks/useData';
+import { CartProductsType } from '../schemas/cartProducts';
 
 type AnimationType = Record<string, boolean>;
 type ProductCarType = {
   productId: string;
-  productName: string;
-  item: ItemsProducts;
   amount: number;
+  imageUrl: string;
+  newPrice: number;
+  oldPrice: number;
+  productName: string;
 };
 
+type TestTy = {
+  setRefreshGlobal: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export const ContextAppProvider = createContext({} as TestTy);
+
 const App: React.FC<AppProps & NextPage> = ({ Component, pageProps }) => {
+  const codebyCookies = getCookie('codeby-products-cart');
   const [active, setActive] = useState(false);
   const [activeSidebarCar, setActiveSidebarCar] = useState(false);
   const [activeAnimation, setAnimation] = useState<AnimationType>();
-  const data = useData();
+  const data = useData({ path: '/products' }) as ResponseProducts[];
 
-  const [productsCar, setProductsCar] = useState<
-    Record<string, ProductCarType>
-  >({});
+  const [refreshGlobal, setRefreshGlobal] = useState(false);
 
-  const [getAmount, setAmount] = useState<Record<string, number>>({});
+  const dataCart = useData({
+    path: '/showCart',
+    cartId: String(codebyCookies),
+    refresh: refreshGlobal,
+  }) as CartProductsType;
+
+  const [productsCart, setProductsCart] = useState<ProductCarType[]>();
 
   const [getTotal, setTotal] = useState(0);
 
-  const [effectRefresh, setRefresh] = useState(false);
-
   useEffect(() => {
-    const productsId = getCookie('codeby-products-car');
+    if (codebyCookies) {
+      let values: ProductCarType[] = [];
+      let total = 0;
 
-    if (productsId) {
-      const parseCookie = String(productsId);
+      data?.forEach((products) => {
+        const { items } = products;
 
-      if (!parseCookie) return;
+        items?.forEach((product) => {
+          dataCart.products?.forEach((item) => {
+            const { images, sellers, nameComplete } = product;
 
-      const ProductsOfCar = JSON.parse(parseCookie);
+            if (item.productId === product.itemId) {
+              values.push({
+                amount: item.amount,
+                imageUrl: images[0].imageUrl, // url will always be at index 0
+                newPrice: sellers[0].commertialOffer.PriceWithoutDiscount, // priceWD will always be at index 0
+                oldPrice: sellers[0].commertialOffer.Price, // old price will always be at index 0
+                productName: nameComplete,
+                productId: item.productId,
+              });
 
-      data?.forEach((value) => {
-        const { items, productName } = value;
-
-        items.forEach((item) => {
-          const { itemId: productId } = item;
-
-          const dataItem = items[ProductsOfCar?.[productId]?.[2]];
-          const amount = ProductsOfCar?.[productId]?.[1];
-          const idOfProduct = ProductsOfCar?.[productId]?.[0];
-
-          if (item.itemId.includes(idOfProduct) && amount && idOfProduct) {
-            setProductsCar((prev) => ({
-              ...prev,
-              [productId]: {
-                productId,
-                productName,
-                item: dataItem,
-                amount,
-              },
-            }));
-          }
+              total +=
+                item.amount *
+                product.sellers[0].commertialOffer.PriceWithoutDiscount;
+            }
+          });
         });
       });
 
-      Object.values(productsCar).forEach((value: ProductCarType) => {
-        setTotal(
-          (prev) =>
-            prev + value.item?.sellers[0].commertialOffer.Price * value.amount
-        );
-
-        setAmount((prev) => ({ ...prev, [value.productId]: value.amount }));
-      });
+      setProductsCart(values);
+      setTotal(total);
     }
-  }, [effectRefresh, data]);
+  }, [data, codebyCookies, dataCart, codebyCookies]);
 
   const handleClickActiveMobile = () => {
     const body = document.getElementById('active-mobile');
@@ -145,238 +147,184 @@ const App: React.FC<AppProps & NextPage> = ({ Component, pageProps }) => {
     setAnimation((prev) => ({ ...prev, [className]: !prev?.[className] }));
   };
 
-  const handleChangeRemoveProduct = (productId: string, index: number) => {
-    const productsId = JSON.parse(String(getCookie('codeby-products-car')));
+  const handleChangeRemoveProduct = (productId: string, index: number) => {};
 
-    const element = productsId?.[productId];
-
-    if (element && element[1] >= 1) {
-      let newParseProductsCar = {
-        ...productsId,
-        [productId]: [productId, Number(element[1]) - 1, index],
-      };
-
-      Object.values(productsCar).forEach((value: ProductCarType) => {
-        setTotal((prev) => prev - value.item?.sellers[0].commertialOffer.Price);
-      });
-
-      setAmount((prev) => ({ ...prev, [productId]: prev[productId]-- }));
-
-      setCookies('codeby-products-car', JSON.stringify(newParseProductsCar), {
-        maxAge: 60 * 60 * 24,
-      });
-
-      return;
-    }
-
-    setRefresh((prev) => !prev);
-  };
-
-  const handleChangeAddProduct = (productId: string, index: number) => {
-    const productsId = JSON.parse(String(getCookie('codeby-products-car')));
-
-    const element = productsId?.[productId];
-
-    if (element) {
-      let newParseProductsCar = {
-        ...productsId,
-        [productId]: [productId, Number(element[1]) + 1, index],
-      };
-
-      Object.values(productsCar).forEach((value: ProductCarType) => {
-        setTotal((prev) => value.item?.sellers[0].commertialOffer.Price + prev);
-      });
-
-      setAmount((prev) => ({ ...prev, [productId]: prev[productId]++ }));
-
-      setCookies('codeby-products-car', JSON.stringify(newParseProductsCar), {
-        maxAge: 60 * 60 * 24,
-      });
-
-      return;
-    }
-
-    setRefresh((prev) => !prev);
-  };
+  const handleChangeAddProduct = (productId: string, index: number) => {};
 
   return (
     <ContextProvider>
-      <ThemeProvider theme={theme}>
-        <StylesGlobal />
-        <Header>
-          <BoxLogo>
-            <Link href="/">
-              <a>
-                <img src={logo.src} alt="Codeby" />
-              </a>
-            </Link>
-          </BoxLogo>
+      <ContextAppProvider.Provider value={{ setRefreshGlobal }}>
+        <ThemeProvider theme={theme}>
+          <StylesGlobal />
+          <Header>
+            <BoxLogo>
+              <Link href="/">
+                <a>
+                  <img src={logo.src} alt="Codeby" />
+                </a>
+              </Link>
+            </BoxLogo>
 
-          <Navigation>
-            <div className="button-mobile" onClick={handleClickActiveMobile}>
-              <img
-                src={hamburguer.src}
-                alt="Hamburguer"
-                style={{ display: !active ? 'flex' : 'none' }}
-              />
-              <img
-                src={buttonX.src}
-                alt="Exit"
-                style={{ display: active ? 'flex' : 'none' }}
-              />
-            </div>
-            <List activeMobile={active} onClick={handleClickActiveMobile}>
-              <ul>
-                <Link href="/">
-                  <a>Home</a>
-                </Link>
-              </ul>
-              <ul>
-                <Link href="/products">
-                  <a>Meus Produtos</a>
-                </Link>
-              </ul>
-            </List>
-            <BoxCar onClick={handleClickActiveSidebarCar}>
-              <img src={iconCar.src} alt="Carrinho" />
-              <span>CART</span>
-              <span className="quant">{Object.values(productsCar).length}</span>
-            </BoxCar>
+            <Navigation>
+              <div className="button-mobile" onClick={handleClickActiveMobile}>
+                <img
+                  src={hamburguer.src}
+                  alt="Hamburguer"
+                  style={{ display: !active ? 'flex' : 'none' }}
+                />
+                <img
+                  src={buttonX.src}
+                  alt="Exit"
+                  style={{ display: active ? 'flex' : 'none' }}
+                />
+              </div>
+              <List activeMobile={active} onClick={handleClickActiveMobile}>
+                <ul>
+                  <Link href="/">
+                    <a>Home</a>
+                  </Link>
+                </ul>
+                <ul>
+                  <Link href="/products">
+                    <a>Meus Produtos</a>
+                  </Link>
+                </ul>
+              </List>
+              <BoxCar onClick={handleClickActiveSidebarCar}>
+                <img src={iconCar.src} alt="Carrinho" />
+                <span>CART</span>
+                <span className="quant">{productsCart?.length ?? 0}</span>
+              </BoxCar>
 
-            <SideProductsOfCard activeSidebar={activeSidebarCar}>
-              <BoxSidebar>
-                <button type="button" onClick={handleClickActiveSidebarCar}>
-                  <img src={iconsSide.src} alt="Remover" />
-                </button>
+              <SideProductsOfCard activeSidebar={activeSidebarCar}>
+                <BoxSidebar>
+                  <button type="button" onClick={handleClickActiveSidebarCar}>
+                    <img src={iconsSide.src} alt="Remover" />
+                  </button>
 
-                <div>
-                  <h2>Meu Carrinho</h2>
-                </div>
-              </BoxSidebar>
+                  <div>
+                    <h2>Meu Carrinho</h2>
+                  </div>
+                </BoxSidebar>
 
-              <ContainerProductsOfCar>
-                {productsCar &&
-                  Object.values(productsCar).map(
-                    (value: ProductCarType, index) => (
+                <ContainerProductsOfCar>
+                  {productsCart &&
+                    productsCart.map((product, index) => (
                       <ProductOfCar
-                        amount={getAmount[value.productId]}
-                        key={value.productId}
-                        imageUrl={String(value.item?.images[0].imageUrl)}
-                        newPrice={Number(
-                          value.item?.sellers[0].commertialOffer.Price
-                        )}
-                        oldPrice={Number(
-                          value.item?.sellers[0].commertialOffer.Price
-                        )}
-                        productName={String(value.item?.nameComplete)}
+                        amount={product.amount}
+                        key={product.productId}
+                        imageUrl={String(product.imageUrl)}
+                        newPrice={Number(product.newPrice)}
+                        oldPrice={Number(product.oldPrice)}
+                        productName={String(product.productName)}
                         onClickButtonMinus={() =>
-                          handleChangeRemoveProduct(value.productId, index)
+                          handleChangeRemoveProduct(product.productId, index)
                         }
                         onClickButtonPlus={() =>
-                          handleChangeAddProduct(value.productId, index)
+                          handleChangeAddProduct(product.productId, index)
                         }
                       />
-                    )
-                  )}
-              </ContainerProductsOfCar>
-              <ContainerAmount>
+                    ))}
+                </ContainerProductsOfCar>
+                <ContainerAmount>
+                  <div>
+                    <span>Total:</span>
+                    <span>{formatPricePtBr(getTotal, true)}</span>
+                  </div>
+
+                  <Button>Finalizar Compra</Button>
+                </ContainerAmount>
+              </SideProductsOfCard>
+            </Navigation>
+          </Header>
+          <Component {...pageProps} />
+
+          <Footer>
+            <SectionSendEmail>
+              <BoxForm>
+                <h2>FIQUE POR DENTRO DAS NOVIDADES</h2>
+
                 <div>
-                  <span>Total:</span>
-                  <span>{formatPricePtBr(getTotal, true)}</span>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Digite seu e-mail"
+                  />
+                  <Button type="submit">Assinar</Button>
                 </div>
+              </BoxForm>
+              <ContainerSocialNetwork>
+                <span>Siga a gente!</span>
 
-                <Button>Finalizar Compra</Button>
-              </ContainerAmount>
-            </SideProductsOfCard>
-          </Navigation>
-        </Header>
-        <Component {...pageProps} />
-
-        <Footer>
-          <SectionSendEmail>
-            <BoxForm>
-              <h2>FIQUE POR DENTRO DAS NOVIDADES</h2>
-
+                <BoxSocialNetwork>
+                  <Link href="/">
+                    <a>
+                      <img src={iconFace.src} alt="Facebook" />
+                    </a>
+                  </Link>
+                  <Link href="/">
+                    <a>
+                      <img src={iconYt.src} alt="Youtube" />
+                    </a>
+                  </Link>
+                  <Link href="/">
+                    <a>
+                      <img src={iconLinkedin.src} alt="Linkedin" />
+                    </a>
+                  </Link>
+                </BoxSocialNetwork>
+              </ContainerSocialNetwork>
+            </SectionSendEmail>
+            <ContainerFooter
+              icon1={activeAnimation?.activeAnimation1}
+              icon2={activeAnimation?.activeAnimation2}
+            >
               <div>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Digite seu e-mail"
-                />
-                <Button type="submit">Assinar</Button>
+                <CarLink
+                  onClick={() => handleClickAnimationList('activeAnimation1')}
+                  title="Institucional"
+                  className={
+                    activeAnimation?.activeAnimation1 ? 'activeAnimation1' : ''
+                  }
+                >
+                  <Link href="/">
+                    <a>Quem somos</a>
+                  </Link>
+                  <Link href="/">
+                    <a>Nossas Lojas</a>
+                  </Link>
+                </CarLink>
+
+                <CarLink
+                  onClick={() => handleClickAnimationList('activeAnimation2')}
+                  title="Atendimento"
+                  className={`card-two ${
+                    activeAnimation?.activeAnimation2 ? 'activeAnimation2' : ''
+                  }`}
+                >
+                  <Link href="/">
+                    <a>Central de atendimento</a>
+                  </Link>
+                  <Link href="/">
+                    <a>Trocas e devoluções</a>
+                  </Link>
+                  <Link href="/">
+                    <a>Política de privacidade</a>
+                  </Link>
+                </CarLink>
+
+                <BoxLogoVtex>
+                  <span>POWERED BY</span>
+                  <img src={logoVtex.src} alt="Vtex" />
+                </BoxLogoVtex>
               </div>
-            </BoxForm>
-            <ContainerSocialNetwork>
-              <span>Siga a gente!</span>
-
-              <BoxSocialNetwork>
-                <Link href="/">
-                  <a>
-                    <img src={iconFace.src} alt="Facebook" />
-                  </a>
-                </Link>
-                <Link href="/">
-                  <a>
-                    <img src={iconYt.src} alt="Youtube" />
-                  </a>
-                </Link>
-                <Link href="/">
-                  <a>
-                    <img src={iconLinkedin.src} alt="Linkedin" />
-                  </a>
-                </Link>
-              </BoxSocialNetwork>
-            </ContainerSocialNetwork>
-          </SectionSendEmail>
-          <ContainerFooter
-            icon1={activeAnimation?.activeAnimation1}
-            icon2={activeAnimation?.activeAnimation2}
-          >
-            <div>
-              <CarLink
-                onClick={() => handleClickAnimationList('activeAnimation1')}
-                title="Institucional"
-                className={
-                  activeAnimation?.activeAnimation1 ? 'activeAnimation1' : ''
-                }
-              >
-                <Link href="/">
-                  <a>Quem somos</a>
-                </Link>
-                <Link href="/">
-                  <a>Nossas Lojas</a>
-                </Link>
-              </CarLink>
-
-              <CarLink
-                onClick={() => handleClickAnimationList('activeAnimation2')}
-                title="Atendimento"
-                className={`card-two ${
-                  activeAnimation?.activeAnimation2 ? 'activeAnimation2' : ''
-                }`}
-              >
-                <Link href="/">
-                  <a>Central de atendimento</a>
-                </Link>
-                <Link href="/">
-                  <a>Trocas e devoluções</a>
-                </Link>
-                <Link href="/">
-                  <a>Política de privacidade</a>
-                </Link>
-              </CarLink>
-
-              <BoxLogoVtex>
-                <span>POWERED BY</span>
-                <img src={logoVtex.src} alt="Vtex" />
-              </BoxLogoVtex>
-            </div>
-            <div className="footer">
-              <p>© 2019, CODEBY | TECNOLOGIA PARA NEGÓCIOS POWERED BY VTEX</p>
-            </div>
-          </ContainerFooter>
-        </Footer>
-      </ThemeProvider>
+              <div className="footer">
+                <p>© 2019, CODEBY | TECNOLOGIA PARA NEGÓCIOS POWERED BY VTEX</p>
+              </div>
+            </ContainerFooter>
+          </Footer>
+        </ThemeProvider>
+      </ContextAppProvider.Provider>
     </ContextProvider>
   );
 };

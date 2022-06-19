@@ -37,7 +37,7 @@ export const BoxOfProduct: React.FC<ProductType> = ({
         <a> */}
       <div>
         <div className="box-image">
-          <img src={imageUrl} alt={productName} />
+          <img src={imageUrl} alt={productName} loading="lazy" />
         </div>
         <BoxInformation>
           <ProductName className="product-name">
