@@ -1,5 +1,6 @@
 import { Model } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
+import Cors from '../../middleware/Cors';
 import { CartProductsType } from '../../schemas/cartProducts';
 import ConnectionToDabase from '../../service/mongodbConnection';
 
@@ -11,6 +12,8 @@ export default async function removeProductCart(
   Request: NextApiRequest,
   Response: NextApiResponse
 ) {
+  await Cors(Request, Response);
+
   if (!cacheDbCartProducts) {
     cacheDbCartProducts = await ConnectionToDabase();
   }

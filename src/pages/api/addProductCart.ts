@@ -2,6 +2,7 @@ import { Model } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CartProductsType } from '../../schemas/cartProducts';
 import ConnectionToDabase from '../../service/mongodbConnection';
+import Cors from '../../middleware/Cors';
 import { v4 as uuid } from 'uuid';
 
 type CacheDbType = Model<CartProductsType> | null;
@@ -12,6 +13,8 @@ export default async function addProductCart(
   Request: NextApiRequest,
   Response: NextApiResponse
 ) {
+  await Cors(Request, Response);
+
   // avoiding multiples connnections
   if (!cacheDbCartProducts) {
     cacheDbCartProducts = await ConnectionToDabase();
