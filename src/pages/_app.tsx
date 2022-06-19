@@ -91,7 +91,7 @@ const App: React.FC<AppProps & NextPage> = ({ Component, pageProps }) => {
         const { items } = products;
 
         items?.forEach((product) => {
-          dataCart.products?.forEach((item) => {
+          dataCart?.products?.forEach((item) => {
             const { images, sellers, nameComplete } = product;
 
             if (item.productId === product.itemId) {

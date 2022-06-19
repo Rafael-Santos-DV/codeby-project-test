@@ -54,7 +54,7 @@ const ContextProvider: React.FC<ContextProviderType> = ({ children }) => {
         const { items } = products;
 
         items?.forEach((product) => {
-          dataCart.products?.forEach((item) => {
+          dataCart?.products?.forEach((item) => {
             const { images, sellers, nameComplete } = product;
 
             if (item.productId === product.itemId) {

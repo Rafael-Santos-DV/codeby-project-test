@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { getCookie, setCookies } from 'cookies-next';
 
 import { BoxOfProduct } from '../components/BoxOfProduct/BoxOfProduct';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { GlobalDataProvider } from '../context/ContextProvider';
 import 'react-toastify/dist/ReactToastify.css';
 import { SkeletonScreen } from '../components/SkeletonScreen/SkeletonScreen';
@@ -31,6 +31,10 @@ const Home: React.FC<NextPage> = () => {
     index: number,
     cartId?: string
   ) => {
+    toast.loading('adicionando...', {
+      position: 'top-center',
+    });
+
     try {
       const data = (
         await ApiCode.post('/addProductCart', {
@@ -46,6 +50,7 @@ const Home: React.FC<NextPage> = () => {
         });
       }
 
+      toast.dismiss();
       toast.success('Adicionado ao carrinho!');
 
       setRefreshGlobal((prev) => !prev);
