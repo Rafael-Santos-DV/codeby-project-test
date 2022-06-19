@@ -4,7 +4,7 @@ import SchemaCartProducts from '../schemas/cartProducts';
 async function connectToDatabase() {
   try {
     const connection = await mongoose.createConnection(
-      process.env.URL_MONGODB_LOCAL ?? '',
+      process.env.URL_MONGODB ?? '',
       {
         dbName: 'cartOfProducts',
       }
