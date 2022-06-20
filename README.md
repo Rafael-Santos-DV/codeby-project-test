@@ -10,7 +10,11 @@
 
 <div>
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+</div>
+<div>
   <img src="https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="NextJs">
+</div>
+<div>
   <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="Mongodb">
 </div>
 
@@ -18,7 +22,6 @@
     git clone https://github.com/Rafael-Santos-DV/codeby-project-test.git
 ```
 ```
-  // yarn
     yarn install
 ```
 
