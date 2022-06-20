@@ -20,6 +20,7 @@
 
 ```
     git clone https://github.com/Rafael-Santos-DV/codeby-project-test.git
+    cd codeby-project-test
 ```
 ```
     yarn install
