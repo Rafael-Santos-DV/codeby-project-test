@@ -43,6 +43,22 @@ export default async function addProductCart(
     cartId,
   });
 
+  if (!data) {
+    const response = await cacheDbCartProducts.create({
+      cartId: uuid(),
+      products: [
+        {
+          amount: 1,
+          indexCart,
+          productId,
+          id: uuid(),
+        },
+      ],
+    });
+
+    return Response.status(200).json(response);
+  }
+
   if (data) {
     const { products } = data;
 

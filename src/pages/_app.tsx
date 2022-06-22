@@ -172,14 +172,14 @@ const App: React.FC<AppProps & NextPage> = ({ Component, pageProps }) => {
 
   const handleChangeAddProduct = async (productId: string, index: number) => {
     try {
-      await ApiCode.post('/addProductCart', {
+      const response = await ApiCode.post('/addProductCart', {
         productId,
         indexCart: index,
         cartId: codebyCookies,
       });
 
       setRefreshGlobal((prev) => !prev);
-      setCookies('codeby-products-cart', codebyCookies, {
+      setCookies('codeby-products-cart', response.data.cartId, {
         maxAge: 60 * 60 * 24,
       });
     } catch (err) {

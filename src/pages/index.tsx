@@ -36,15 +36,12 @@ const Home: React.FC<NextPage> = () => {
         })
       ).data as CartProductsType;
 
-      if (!codebyCookies) {
-        setCookies('codeby-products-cart', data.cartId, {
-          maxAge: 60 * 60 * 24,
-        });
-      }
-
       toast.dismiss();
-      toast.success('Adicionado ao carrinho!');
+      setCookies('codeby-products-cart', data.cartId, {
+        maxAge: 60 * 60 * 24,
+      });
 
+      toast.success('Adicionado ao carrinho!');
       setRefreshGlobal((prev) => !prev);
     } catch (err) {
       toast.error('Erro interno!');

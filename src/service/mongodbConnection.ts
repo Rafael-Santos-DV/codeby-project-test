@@ -11,6 +11,8 @@ async function connectToDatabase() {
     );
 
     const cartProducts = connection.model('cartOfProducts', SchemaCartProducts);
+
+    console.log('conectado com sucesso!');
     return cartProducts;
   } catch (error) {
     throw `${error}`;
