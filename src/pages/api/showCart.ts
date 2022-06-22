@@ -29,6 +29,7 @@ export default async function showCart(
 
     return Response.status(200).json(data);
   } catch (err) {
+    console.log("debug", err);
     return Response.status(500).json({ error: 'Internal server error!' });
   }
 }
